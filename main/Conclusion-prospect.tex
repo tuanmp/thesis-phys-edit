@@ -1,0 +1,34 @@
+\chapter{Conclusion}
+
+This thesis presents a combination of a wide range of searches targeting experimental signatures with and without a missing transverse momentum $\met$ and an interpretation in the context of a Two-Higgs-Doublet Model extended by a pseudo-scalar mediator (\thdma) between the visible and dark sectors. 
+The searches use up to 139 \ifb of proton-proton collision data at a center-of-mass energy $\sqrt{s} = 13$ TeV recorded by the ATLAS detector during LHC Run 2 between 2015 and 2018. 
+The most sensitive analyses, including searches for large \met produced in association with a leptonically decaying $Z$-boson (\monozll) and with a SM Higgs boson decaying to a pair of $b$-quarks (\monohbb), and a search for associated production of a top and a bottom quarks with a charged Higgs boson decaying to a top and a bottom quark (\htb) are statistically combined, and constraints from other searches are overlaid in the summary.
+No significant deviations from SM predictions are observed, and 95\% confidence-level upper limits on the \thdma for a variety of benchmark scenarios, including those based on the recommendations of the LHC Dark Matter Working Group and several new ones exploring the model's rich phenomenology, are established. 
+
+Large regions of the parameter space are excluded, thanks to the combined sensitivity of the $\met+X$ and \htb signatures.
+The \monozll and \monohbb searches drive the sensitivity in at high heavy Higgs boson mass ($m_A=m_H=m_{H^{\pm}}$), while the \htb search is most sensitive at low $m_A$ across the full mediator mass (\ma) range.
+The latter also extends the exclusion region in $\tan\beta$ across all $m_a$
+The statistically combined result provides better sensitivity to the \thdma than that derived from each individual search. 
+This analysis represents an improvement over the summary based on 36 \ifb of data from LHC Run 1, by statistically combining the \htb channel which was previously not considered, by including new benchmark scenarios, and by incorporating a larger amount of data. 
+Nevertheless, a large part of the parameter space remains unexcluded and awaits future analyses using larger datasets.
+
+In general, the sensitivity of searches for BSM signals, as well as precision measurements of SM processes is statistically constrained. 
+The High Luminosity Large Hadron Collider (HL-LHC) promises an order of magnitude increase in collision data compared to that acquired over the three nominal LHC Runs, which would greatly benefits all physics programs at each of the general-purpose experiments.
+Nevertheless, reaching this goal requires considerable upgrades in event reconstruction.
+Charged-particle track reconstruction, in particular, faces numerous challenges from the increased expected pile-up multiplicity ($\expval{\mu}$), for which a GPU-based new algorithm is a potential solution. 
+We investigate an algorithm based on Graph Neural Networks (GNNs) for tracking under HL-LHC conditions.
+Using $t\bar{t}$ collision event simulated simulated at $\expval{\mu}=200$ with realistic ITk layout, we optimized all stages of the algorithm, including graph construction, edge classification and graph segmentation. 
+Compared to previous publications, this thesis demonstrates a comprehensive apple-to-apple comparison to the traditional technique in important tracking metrics, as well as measurements and optimizations of the computing performance.
+
+The efficiency on target particles in $t\bar{t}$ samples of exceeds that of the Combinatorial Kalman Filter (CKF) at low transverse momentum $p_T$, and is competitive at high $p_T$.
+At the same time, the proportion of track candidates having the highest matching probability less than 50\% is significantly reduced. 
+Good impact parameter resolution is observed, but the momentum resolution has yet to reach the same level of CKF. 
+The fastest configuration of the algorithm, in which the first two stages are carried out on the GPU and the last on the CPU, has a total run time of $\approx 200$ ms/event.
+
+Despite the impressive performance, future work is need to improve and demonstrated the algorithm. 
+First, the object-level performance must be evaluated to understand potential impacts on the reconstruction and identification of various physics objects. 
+For example, the efficiency and parameter resolution of tracks inside $b$-quark jets is an indicator of $b$-tagging performance, whereas samples containing single muons, electrons, and pions help isolate the performance when various levels of material interactions are involved, as we as track quality at fixed transverse momenta.
+Single-cluster hits should also be reintroduced into the track candidates constructed by the GNN-chain to improve momentum resolution.
+Second, all stages the algorithm must be implemented to run on the GPU and fully integrated into Athena via the ACTS framework. 
+In particular, the graph segmentation which runs on the CPU and the metric learning technique based on costly kNN searches are identified as bottlenecks, which ongoing developments will address. 
+Other incremental improvements, such as model size reduction and quantization, could shave away both inference time and memory consumption, enhancing algorithmic frugality and economic competitiveness. 

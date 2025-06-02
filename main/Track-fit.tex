@@ -1,0 +1,93 @@
+\appendix
+\chapter{Track fit}
+\label{app:track-fit}
+Track reconstruction identifies a track candidate as a digital realization of a particle trajectory in the detector. In many cases, a track candidate could simply be a set of detector measurements, which by itself does not provide any useful physical information about the trajectory. Only by fitting a track model through these measurements can we extract a set of track parameters that describe the momentum and impact parameters of the particle. This chapter describes elements of track fitting using the Least-Square Method and the Kalman Filter in ATLAS, laying the foundation for the discussion in subsequent chapters.
+
+\section{Basic concepts}
+\label{sect:track-ingredients}
+Aside from the set of measurements, track fitting considers the following essential elements
+\begin{itemize}
+    \item A description of the detector: This detector geometry must include the precise location, dimensions, and orientation of every sensor, allowing the estimation of the track state projected on the local coordinates of the sensor plane, as well as the intrinsic uncertainty associated with its measurements. In addition, a distribution of inactive materials must also be given, as they interaction with the particle to accurately model deviations deviations from an ideal trajectory caused by interactions with these materials.
+    \item A track model describing the particle trajectory given the detector setup. For example, in a homogeneous magnetic field, an analytical solution to the equation of motion describing a helical orbit is obtained from the equation of motion which specifies the location of the particle at time $t$ given the initial location $\mathbf{r}_0$ and momentum $\mathbf{p}_0$ at time $t_0$. The magnetic field in ATLAS is far too complex for such an analytical solution to exist. In addition, interactions with detector material deviate the trajectory further from a perfect helix, and, as a result, the track model must be obtained from numerical integrations. 
+\end{itemize}
+A helical track is represented by a set of track parameters, denoted by
+
+\begin{equation}
+    \label{11.1}
+    \mathbf{x} = \mathbf{x}(s)
+\end{equation}
+The choice of parametrization varies from one experiment to another. In ATLAS, tracks are parametrized by 5 parameters
+\begin{equation}
+\label{11.2}
+\mathbf{x} = (\theta, \phi, p, d_0, z_0)
+\end{equation}
+in which $(\theta, \phi, p)$ represents the momentum in spherical coordinates, and $(d_0, z_0)$ respectively specifies the longitudinal and polar impact parameters. The track state can evolve non-trivially as the particle interacts with detector materials on its flight path, which is why it is written as a function of a free parameter $s$ denoting, in our case, the arc length. When 
+
+In general, track parameters are not directly measurable. 
+Instead, only their projection on the surface of discrete sensor elements are experimentally available. At the $i$-th intersection of the track with a detector module, we denote the track state as $\mathbf{x}_i$, the corresponding measurement vector as $m_i\in \mathbb{R}^d$, and assume a measurement mapping function $h_i: \mathbb{R}^5\to \mathbb{R}^n$. This mapping depends on the sensor device encounter at $i$, e.g. a pixel module makes a measurement different from that of a strip module, and thus corresponds to a different mapping function. The $i$-th measurement vector is given by 
+\begin{equation}
+    \label{11.3}
+    \mathbf{m}_i = h_i(\mathbf{x}_i) + \mathbf{e}_i
+\end{equation}
+Just like any measured quantity, $\mathbf{m}_i$ is a random variable, assumed to be the sum of the deterministic projection $h_i(\mathbf{x}_i)$ and a noise model $\mathbf{e}_i$ describing the intrinsic uncertainty of the detector. 
+
+With these definitions, track fitting is reduced to finding a transformation $F: \mathbb{R}^d \to \mathbb{R}^5$ that maps the measurements $\{\mathbf{m}\}$ back to the track parameters, such that the estimated track state is unbiased and has minimum variance
+\begin{equation}
+    \label{11.4}
+    \hat{\mathbf{x}} = F(\mathbf{m}), \quad E[\hat{\mathbf{x}}] = \mathbf{x}, \quad \mathbf{V}(\hat{\mathbf{x}}_i) = \min_F E[(\hat{\mathbf{x}} - \mathbf{x}) ^2]
+\end{equation}
+% \section{The linear least squares method}
+The linear least square method makes, in addition to the non-bias and minimum variance requirements, an assumption that the measurement model is a linear function of the track parameters, namely 
+\begin{equation}
+    \label{11.4.1}
+    \mathbf{m} = \mathbf{Hx} + \mathbf{e}.
+\end{equation}
+Assuming an inverse transform exists, we make an ansatz that it is also linear
+\begin{equation}
+    \label{11.5}
+    \hat{\mathbf{x}} = F(\mathbf{m}) = \mathbf{F}\mathbf{m} = \mathbf{F}(\mathbf{Hx} + \mathbf{e}) = \mathbf{FHx} + \mathbf{Fe}
+\end{equation}
+It is worth noting that this assumption only holds for a careful choice of parametrization. In ATLAS, the track parameters and measurement model are selected such that a linear model always applies. From the requirement that the estimate be unbiased, we have
+\begin{equation}
+    \label{11.6}
+    E[\hat{\mathbf{x}}] = \mathbf{FHx} + \mathbf{F}E[\mathbf{e}] = \mathbf{FHx} = \mathbf{x} \Rightarrow \mathbf{FH} = \mathbf{I}
+\end{equation}
+The sum of variance of $\hat{\mathbf{x}}$ can be written as the trace of the covariance matrix
+\begin{equation} \label{11.7}
+    \begin{split} 
+        \mathbf{V}(\hat{\mathbf{x}} )  &= \Tr[ E[(\hat{\mathbf{x}} - \mathbf{x}) (\hat{\mathbf{x}} - \mathbf{x}) ^T] ] \\
+        &= \Tr [ E[((\mathbf{FH-I})\mathbf{x} + \mathbf{Fe}) ((\mathbf{FH-I})\mathbf{x} + \mathbf{Fe}) ^T] ] \\
+        &= \Tr [ \mathbf{F} E[\mathbf{e}\mathbf{e} ^T] \mathbf{F}^T ]
+    \end{split}
+\end{equation}
+in which we have substituted equation \ref{11.5}. The minimum variance principle thus states that the transformation $\mathbf{F}$ is one that minimizes the right-hand side of equation \ref{11.7} subjected to the constraint of equation in \ref{11.6}. The cost function to be minimized can be written using a Lagrange multiplier 
+\begin{equation}
+\label{11.8}
+J = \frac{1}{2} \Tr [ \mathbf{F} \mathbf{R} \mathbf{F}^T ] + \Tr[\mathbf{(\Lambda (FH-I))}], \quad \quad \mathbf{R} = E[\mathbf{e}\mathbf{e} ^T].
+\end{equation}
+Differentiating with respect to $\mathbf{F}$ and to $\mathbf{\Lambda}$ and setting to 0, we get
+\begin{equation}
+    \label{11.9}
+    \frac{\partial J}{\partial \mathbf{F}} = \frac{1}{2}\mathbf{F} (\mathbf{R} + \mathbf{R}^T) + \Lambda^T\mathbf{H}^T = \mathbf{FR} + \Lambda^T \mathbf{H}^T = 0 \Rightarrow \mathbf{F} = - \Lambda^T \mathbf{H} ^T \mathbf{R} ^{-1}
+\end{equation}
+Solving for $\Lambda$ from the constraint,
+\begin{equation}
+    \label{11.10}
+    \mathbf{FH} = - \Lambda^T \mathbf{H} ^T \mathbf{R} ^{-1} \mathbf{H} = \mathbf{I} \Rightarrow -\Lambda^T = (\mathbf{H} ^T \mathbf{R} ^{-1} \mathbf{H})^{-1},
+\end{equation}
+and substituting into equation \ref{11.9}, we get the inverse transform
+\begin{equation}
+    \label{11.11} \boxed{
+    \mathbf{F} = (\mathbf{H} ^T \mathbf{R} ^{-1} \mathbf{H})^{-1}\mathbf{H}^T \mathbf{R}^{-1}
+    },
+\end{equation}
+and covariance of the residual
+\begin{equation}
+    \label{11.12}
+    \mathbf{P} = E[(\hat{\mathbf{x}} - \mathbf{x})(\hat{\mathbf{x}} - \mathbf{x})^T] = \mathbf{FRF}^T = (\mathbf{H}^T\mathbf{R}^{-1}\mathbf{H})^{-1}\mathbf{H}^T ((\mathbf{H}^T\mathbf{R}^{-1}\mathbf{H})^{-1}\mathbf{H}^T\mathbf{R}^{-1})^T.
+\end{equation}
+A similar result can be gotten by considering the experimental estimate of the covariance $\mathbf{e}\mathbf{e}^T$
+\begin{equation}
+    \label{11.13}
+    \Tr[ \overline{\mathbf{ee}^T}] = \frac{1}{n} \sum_{i=1}^n (\mathbf{m}_i - \mathbf{Hx}_i)^T\mathbf{R}_i^{-1}(\mathbf{m}_i - \mathbf{Hx}_i) = 
+\end{equation}
